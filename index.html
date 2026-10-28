@@ -145,5 +145,24 @@ alert('Link copied! https://samzyjjj.github.io/Samzy/');
 }
 renderUsers();
 </script>
+
+<!-- Samzy REAL Firebase - No card needed -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAx533WvwiaJ9lNV7_E8zHfZyTunli2Z6g",
+    authDomain: "samzy-91ac2.firebaseapp.com",
+    projectId: "samzy-91ac2",
+    storageBucket: "samzy-91ac2.firebasestorage.app",
+    messagingSenderId: "998284739803",
+    appId: "1:998284739803:web:b5d450a5a724da984178fe"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  console.log("Samzy CONNECTED! Ready to earn!");
+</script>
+
 </body>
 </html>
