@@ -1,1 +1,103 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Samzy - Real Chat</title><style>*{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}body{display:flex;height:100vh;background:#f0f2f5}.sidebar{width:35%;background:#fff;border-right:1px solid #ddd}.chat{width:65%;display:flex;flex-direction:column;background:#e5ddd5}.header{background:#075e54;color:#fff;padding:15px;font-weight:bold}.users div{padding:12px;border-bottom:1px solid #eee;cursor:pointer}.msgBox{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:8px}.msg{background:#fff;padding:8px 12px;border-radius:8px;max-width:75%}.msg.me{background:#dcf8c6;align-self:flex-end}.inputArea{display:flex;padding:10px;background:#f0f0f0;gap:8px}.inputArea input{flex:1;padding:12px;border-radius:20px;border:none;outline:none}.inputArea button{padding:12px 18px;border-radius:20px;border:none;background:#075e54;color:#fff}</style></head><body><div class="sidebar"><div class="header">Samzy</div><div class="users" id="u"></div></div><div class="chat"><div class="header" id="h">Select chat</div><div class="msgBox" id="m"></div><div class="inputArea"><input id="i" placeholder="Type real message..."><button onclick="s()">Send</button></div></div><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script><script>firebase.initializeApp({apiKey:"AIzaSyAx533WvwiaJ9lNV7_E8zHfZyTunli2Z6g",authDomain:"samzy-91ac2.firebaseapp.com",projectId:"samzy-91ac2"});const db=firebase.firestore();let c=null;let L=["Samzy Support","User 2","User 3","Group"];let d=document.getElementById('u');L.forEach((x,j)=>{let e=document.createElement('div');e.textContent=x;e.onclick=()=>{c=j;document.getElementById('h').textContent=x;load()};d.appendChild(e)});function load(){if(c===null)return;db.collection("chats").doc("chat_"+c).collection("messages").orderBy("time").onSnapshot(q=>{let b=document.getElementById('m');b.innerHTML='';q.forEach(doc=>{let k=doc.data();b.innerHTML+=`<div class="msg ${k.me?'me':''}">${k.text}</div>`});b.scrollTop=b.scrollHeight})}function s(){let a=document.getElementById('i');let t=a.value.trim();if(!t||c===null)return;db.collection("chats").doc("chat_"+c).collection("messages").add({text:t,me:true,time:Date.now()});a.value=''}</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samzy - Like Facebook</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui;background:#f0f2f5;padding-bottom:70px}
+.header{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;padding:0 12px;box-shadow:0 1px 2px rgba(0,0,0,.1);z-index:100;gap:8px}
+.logo{color:#0866ff;font-weight:900;font-size:28px}
+.search{flex:1;max-width:400px;background:#f0f2f5;border-radius:20px;padding:8px 14px;display:flex;align-items:center;gap:8px}
+.search input{border:none;background:transparent;outline:none;width:100%}
+.nav-bottom{position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:1px solid #ddd;display:flex;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#65676b}
+.nav-item.active{color:#0866ff;border-top:3px solid #0866ff}
+.nav-item i{font-size:22px}
+.nav-item span{font-size:10px;margin-top:2px}
+.content{margin-top:56px;max-width:680px;margin-left:auto;margin-right:auto;padding:8px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.1);margin-bottom:8px;padding:12px}
+.create-post{display:flex;gap:8px;align-items:center}
+.create-post img{width:40px;height:40px;border-radius:50%}
+.create-post button{flex:1;background:#f0f2f5;border:none;border-radius:20px;padding:10px;text-align:left;color:#65676b}
+.post-header{display:flex;gap:8px;align-items:center}
+.post-header img{width:40px;height:40px;border-radius:50%}
+.post-img{width:100%;border-radius:8px;margin-top:8px;max-height:400px;object-fit:cover}
+.post-actions{display:flex;justify-content:space-around;border-top:1px solid #eee;margin-top:8px;padding-top:8px}
+.post-actions div{cursor:pointer;color:#65676b;padding:6px 12px;border-radius:6px}
+.story-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.story{min-width:110px;height:180px;border-radius:10px;position:relative;overflow:hidden;background:#ddd;flex-shrink:0}
+.story img{width:100%;height:100%;object-fit:cover}
+.story span{position:absolute;bottom:6px;left:6px;color:#fff;font-size:12px;font-weight:600}
+.friend-row{display:flex;align-items:center;padding:8px;cursor:pointer;border-radius:8px}
+.friend-row:hover{background:#f0f2f5}
+.friend-row img{width:56px;height:56px;border-radius:50%;margin-right:10px}
+.market-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.market-item{border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.market-item img{width:100%;height:140px;object-fit:cover}
+.market-item div{padding:6px 8px}
+.video-card video{width:100%;border-radius:8px}
+.call-modal{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.call-modal.active{display:flex}
+.call-avatar{width:120px;height:120px;border-radius:50%;margin-bottom:20px;border:4px solid #25D366}
+.call-btns{display:flex;gap:20px;margin-top:30px}
+.call-btns button{width:60px;height:60px;border-radius:50%;border:none;font-size:24px;cursor:pointer}
+.hidden{display:none!important}
+#messageView{position:fixed;inset:0;background:#fff;z-index:150;display:none;flex-direction:column}
+.msg-list{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f0f2f5}
+.msg{max-width:70%;padding:10px 14px;border-radius:18px}
+.msg.me{background:#0084ff;color:#fff;align-self:flex-end}
+.msg.other{background:#fff;align-self:flex-start}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="logo">samzy</div>
+<div class="search"><i class="fas fa-search"></i><input id="globalSearch" placeholder="Search Samzy" oninput="handleSearch()"></div>
+<div style="margin-left:auto;display:flex;gap:12px"><i class="fas fa-plus" style="background:#e4e6eb;padding:8px;border-radius:50%"></i><i class="fab fa-facebook-messenger" style="background:#e4e6eb;padding:8px;border-radius:50%" onclick="showSection('messages')"></i></div>
+</div>
+<div class="content" id="feedSection">
+<div class="card"><div class="story-row">
+<div class="story" style="background:#0866ff;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff"><i class="fas fa-plus" style="background:#fff;color:#0866ff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:8px"></i><span style="color:#fff;position:static">Create Story</span></div>
+<div class="story"><img src="https://i.pravatar.cc/150?img=5"><span>Sarah</span></div>
+<div class="story"><img src="https://i.pravatar.cc/150?img=8"><span>Michael</span></div>
+<div class="story"><img src="https://i.pravatar.cc/150?img=12"><span>Samzy</span></div>
+<div class="story"><img src="https://i.pravatar.cc/150?img=32"><span>Aisha</span></div>
+</div></div>
+<div class="card create-post">
+<img src="https://i.pravatar.cc/150?img=1">
+<button onclick="createPost()">What's on your mind, Samzy?</button>
+<i class="fas fa-images" style="color:#45bd62;font-size:24px"></i>
+</div>
+<div id="posts"></div>
+</div>
+<div class="content hidden" id="friendsSection">
+<div class="card"><h3>Friend Search</h3><div class="search" style="margin-top:8px"><i class="fas fa-search"></i><input id="friendSearch" placeholder="Search friends..." oninput="filterFriends()"></div></div>
+<div class="card" id="friendsList"></div>
+</div>
+<div class="content hidden" id="marketSection">
+<div class="card"><h3>Marketplace</h3><button onclick="addMarket()" style="margin-top:8px;background:#0866ff;color:#fff;border:none;padding:8px 14px;border-radius:6px">+ Sell</button></div>
+<div class="market-grid" id="marketGrid"></div>
+</div>
+<div class="content hidden" id="videosSection">
+<div class="card"><h3>Samzy Watch</h3></div>
+<div id="videoList"></div>
+</div>
+<div class="content hidden" id="messagesSection">
+<div class="card"><h3>Messages</h3></div>
+<div class="card" id="msgFriendsList"></div>
+</div>
+<div id="messageView">
+<div style="height:56px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #ddd;gap:10px;background:#fff">
+<i class="fas fa-arrow-left" onclick="closeMsg()" style="font-size:20px;cursor:pointer"></i>
+<img id="msgAvatar" style="width:36px;height:36px;border-radius:50%">
+<b id="msgName"></b>
+<div style="margin-left:auto;display:flex;gap:16px"><i class="fas fa-phone" style="color:#0866ff;font-size:20px;cursor:pointer" onclick="startCall('voice')"></i><i class="fas fa-video" style="color:#0866ff;font-size:20px;cursor:pointer" onclick="startCall('video')"></i></div>
+</div>
+<div class="msg-list" id="msgBox"></div>
+<div style="display:flex;padding:10px;gap:8px;background:#fff;border-top:1px solid #ddd">
+<input id="chatInput" style="flex:1;background:#f0f2f5;border:none;border-radius:20px;padding:10px 14px;outline:none" placeholder="Aa" onkeypress="if(event.key==='Enter')sendMessage()">
+<button onclick="sendMessage()" style="background:#0866ff;color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer"><i class="fas fa-paper-plane"></i></button>
+</
