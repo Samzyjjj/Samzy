@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SAMZY 5 - Worldwide</title>
+<title>SAMZY</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -13,16 +13,16 @@
 <body>
 <div id="authView"></div>
 <div id="mainView" class="hidden">
-<div class="header"><img src="samzy_logo_256.png" width="32" style="border-radius:8px"><b>SAMZY</b><span id="mySamzy" class="pill"></span><button class="pill" onclick="document.getElementById('mainView').classList.add('hidden');document.getElementById('authView').classList.remove('hidden');localStorage.clear();location.reload()">Logout</button></div>
+<div class="header"><b>SAMZY</b> <span id="mySamzy" class="pill"></span> <button class="pill" onclick="localStorage.clear();location.reload()">Logout</button></div>
 <div id="storiesBar" class="card" style="display:flex;gap:8px;overflow-x:auto"></div>
 <div id="feedView"></div>
 <div id="friendsView" class="hidden"></div>
 <div id="groupsView" class="hidden"></div>
 <div id="marketView" class="hidden"></div>
 <div id="watchView" class="hidden"></div>
-<div id="profileView" class="hidden"></div>
 <div id="savedView" class="hidden"></div>
-<div style="height:70px"></div>
+<div id="profileView" class="hidden"></div>
+<div style="height:80px"></div>
 <div class="tabbar">
 <div class="tab active" onclick="switchTab('feed',this)">🏠</div>
 <div class="tab" onclick="switchTab('friends',this)">👥</div>
@@ -37,11 +37,10 @@
 <script src="firebase-config.js"></script>
 <script src="core.js"></script>
 <script src="features.js"></script>
-<script src="manifest.json" type="application/manifest+json"></script>
 </body>
 </html>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Arial}
-body{background:#020617;color:#fff;padding-bottom:70px}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:#020617;color:#fff}
 .hidden{display:none!important}
 .card{background:#0f172a;border-radius:16px;padding:12px;margin:10px;border:1px solid #1e293b;word-break:break-word}
 .header{background:#0f172a;padding:10px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:50;border-bottom:1px solid #1e293b}
@@ -55,45 +54,17 @@ textarea,input{width:100%;background:#1e293b;border:1px solid #334155;border-rad
 #callScreen.show{display:flex}
 video{width:100%;max-height:60vh;border-radius:12px;background:#000}
 .call-controls{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:16px}
-.call-btn{width:64px;height:64px;border-radius:50%;border:0;font-size:26px;cursor:pointer}
+.call-btn{width:64px;height:64px;border-radius:50%;border:0;font-size:26px}
 .end{background:#ef4444;color:#fff}
 .accept{background:#22c55e;color:#fff}
-const firebaseConfig={
-apiKey:"AIzaSyDUMMY_REPLACE_WITH_YOURS",
-authDomain:"samzy-worldwide.firebaseapp.com",
-databaseURL:"https://samzy-worldwide-default-rtdb.firebaseio.com",
-projectId:"samzy-worldwide",
-storageBucket:"samzy-worldwide.appspot.com",
-messagingSenderId:"123456789",
-appId:"1:123456789:web:abc123"
-};
+const firebaseConfig={apiKey:"REPLACE_WITH_YOUR_KEY",authDomain:"samzy-worldwide.firebaseapp.com",databaseURL:"https://samzy-worldwide-default-rtdb.firebaseio.com",projectId:"samzy-worldwide",storageBucket:"samzy-worldwide.appspot.com",messagingSenderId:"123",appId:"1:123:web:abc"};
 let db=null,storage=null,useFirebase=false,currentUser=null,mySamzy="",postsCache=[],pc=null,localStream=null,activeChat=null;
-const FREE_TURN={urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","turn:openrelay.metered.ca:80"],username:"openrelayproject",credential:"openrelayproject"};
-try{
-firebase.initializeApp(firebaseConfig);
-db=firebase.database();
-storage=firebase.storage();
-useFirebase=true;
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
-if(Notification&&Notification.permission!=="granted"){Notification.requestPermission();}
-}catch(e){console.log("Offline mode",e);}
-async function uploadBig(file){
-if(!file) return "";
-if(!useFirebase||!storage){
-return await new Promise(r=>{let rd=new FileReader();rd.onload=e=>r(e.target.result);rd.readAsDataURL(file);});
-}
-try{
-let ref=storage.ref('samzy/'+(mySamzy||'guest')+'/'+Date.now()+'_'+file.name);
-await ref.put(file);
-return await ref.getDownloadURL();
-}catch(err){
-alert("Firebase Storage not enabled: "+err.message+" - Go to Firebase Console > Storage > Enable");
-return "";
-}
-}
+const FREE_TURN={urls:["stun:stun.l.google.com:19302","turn:openrelay.metered.ca:80"],username:"openrelayproject",credential:"openrelayproject"};
+try{firebase.initializeApp(firebaseConfig);db=firebase.database();storage=firebase.storage();useFirebase=true;if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});}catch(e){}
+async function uploadBig(file){if(!file)return"";if(!useFirebase||!storage){return await new Promise(r=>{let rd=new FileReader();rd.onload=e=>r(e.target.result);rd.readAsDataURL(file);});}let ref=storage.ref('samzy/'+(mySamzy||'guest')+'/'+Date.now()+'_'+file.name);await ref.put(file);return await ref.getDownloadURL();}
 function encryptChat(t,k){try{return btoa(unescape(encodeURIComponent(t+"::"+k)));}catch{return t;}}
 function decryptChat(e){try{let d=decodeURIComponent(escape(atob(e)));return d.split("::")[0];}catch{return e;}}
-function parseFBUrl(t){if(!t) return null;let m=t.match(/(https?:\/\/(www\.)?(facebook\.com|fb\.watch|m\.facebook\.com)\/[^\s]+)/i);return m?m[0]:null;}
+function parseFBUrl(t){if(!t)return null;let m=t.match(/(https?:\/\/(www\.)?(facebook\.com|fb\.watch|m\.facebook\.com)\/[^\s]+)/i);return m?m[0]:null;}
 function genSamzy(){return 'SAMZY-'+String(Date.now()).slice(-6).padStart(6,'0');}
 function handleAuth(){
 let n=document.getElementById('authName').value.trim();
@@ -102,7 +73,7 @@ if(!n){alert('Enter name');return;}
 if(!a){alert('Tick 13+');return;}
 let s=localStorage.getItem('samzy_user');
 if(s){currentUser=JSON.parse(s);mySamzy=currentUser.samzy;}
-else{mySamzy=genSamzy();currentUser={name:n,samzy:mySamzy,time:Date.now()};localStorage.setItem('samzy_user',JSON.stringify(currentUser));if(useFirebase) db.ref('users/'+mySamzy).set(currentUser);}
+else{mySamzy=genSamzy();currentUser={name:n,samzy:mySamzy,time:Date.now()};localStorage.setItem('samzy_user',JSON.stringify(currentUser));if(useFirebase)db.ref('users/'+mySamzy).set(currentUser);}
 document.getElementById('authView').classList.add('hidden');
 document.getElementById('mainView').classList.remove('hidden');
 document.getElementById('mySamzy').textContent=mySamzy;
@@ -110,58 +81,57 @@ initPresence();listenCalls();loadAll();loadStories();
 }
 async function createPost(){
 let txtEl=document.getElementById('postText');let fileEl=document.getElementById('postPic');
+if(!txtEl)return;
 let txt=txtEl.value.trim();let file=fileEl.files[0];let media="";let isVideo=false;let fb=parseFBUrl(txt);
 if(file){media=await uploadBig(file);isVideo=file.type.startsWith('video');}
 if(!txt&&!media&&!fb){alert('Write or upload or paste FB link');return;}
-let p={name:currentUser.name,samzy:mySamzy,text:txt,media:media,isVideo:isVideo,fbLink:fb||"",likes:0,loves:0,hahas:0,time:Date.now()};
-if(useFirebase) db.ref('posts').push(p);txtEl.value="";fileEl.value="";
+let p={name:currentUser.name,samzy:mySamzy,text:txt,media:media,isVideo:isVideo,fbLink:fb||"",likes:0,loves:0,time:Date.now()};
+if(useFirebase)db.ref('posts').push(p);txtEl.value="";fileEl.value="";
 }
 function loadAll(){
-if(!useFirebase){document.getElementById('feedView').innerHTML=`<div class="card"><textarea id="postText" placeholder="Paste FB link OR upload - Mr A Lagos -> Mr B USA"></textarea><input type="file" id="postPic" accept="image/*,video/*"><button class="btn" onclick="createPost()">Post Worldwide</button></div><div class="card">Enable Firebase to see posts</div>`;return;}
-document.getElementById('feedView').innerHTML=`<div class="card"><textarea id="postText" placeholder="Type text + paste Facebook link https://fb.watch/xxx OR upload picture/video 2GB - Mr A -> Mr B"></textarea><input type="file" id="postPic" accept="image/*,video/*"><button class="btn" onclick="createPost()">Post Worldwide</button></div><div id="posts"></div>`;
+if(!useFirebase){document.getElementById('feedView').innerHTML=`<div class="card"><textarea id="postText" placeholder="Paste FB link OR upload"></textarea><input type="file" id="postPic"><button class="btn" onclick="createPost()">Post</button></div>`;return;}
+document.getElementById('feedView').innerHTML=`<div class="card"><textarea id="postText" placeholder="Type + paste FB link https://fb.watch/xxx OR upload picture/video 2GB"></textarea><input type="file" id="postPic" accept="image/*,video/*"><button class="btn" onclick="createPost()">Post Worldwide</button></div><div id="posts"></div>`;
 db.ref('posts').limitToLast(100).on('value',s=>{
 let l=[];s.forEach(c=>{let v=c.val();v.key=c.key;l.unshift(v);});postsCache=l;
-let d=document.getElementById('posts');if(!d) return;
+let d=document.getElementById('posts');if(!d)return;
 d.innerHTML=l.map(p=>{
-let m="";if(p.fbLink) m+=`<div class="pill"><a href="${p.fbLink}" target="_blank" style="color:#0ea5e9">FB: ${p.fbLink.slice(0,40)}... ▶️ Watch</a></div>`;if(p.media) m+=p.isVideo?`<video src="${p.media}" controls playsinline style="width:100%"></video>`:`<img src="${p.media}" style="width:100%">`;
+let m="";if(p.fbLink)m+=`<div class="pill"><a href="${p.fbLink}" target="_blank" style="color:#0ea5e9">FB: ${p.fbLink.slice(0,40)}</a></div>`;if(p.media)m+=p.isVideo?`<video src="${p.media}" controls></video>`:`<img src="${p.media}" style="width:100%">`;
 let own=p.samzy===mySamzy?`<button class="pill" onclick="editPost('${p.key}')">Edit</button><button class="pill" onclick="deletePost('${p.key}')">Delete</button>`:"";
-return `<div class="card"><b>${p.name}</b> <span class="pill">${p.samzy}</span> <small>${new Date(p.time).toLocaleString()}</small><p style="margin:8px 0">${(p.text||'').replace(/@SAMZY-\d+/g,mm=>`<b style="color:#0ea5e9">${mm}</b>`)}</p>${m}<div style="margin-top:8px"><button class="pill" onclick="reactPost('${p.key}','likes')">👍 ${p.likes||0}</button><button class="pill" onclick="reactPost('${p.key}','loves')">❤️ ${p.loves||0}</button><button class="pill" onclick="reactPost('${p.key}','hahas')">😂 ${p.hahas||0}</button><button class="pill" onclick="sharePost('${p.key}')">↗️ Share</button><button class="pill" onclick="savePost('${p.key}')">🔖 Save</button>${own}</div><div style="margin-top:8px"><input id="c_${p.key}" placeholder="Comment + tag @SAMZY-000001"><button class="pill" onclick="commentPost('${p.key}')">Comment</button><div id="com_${p.key}"></div></div></div>`;
+return `<div class="card"><b>${p.name}</b> <span class="pill">${p.samzy}</span> <p>${p.text||''}</p>${m}<div><button class="pill" onclick="reactPost('${p.key}','likes')">👍 ${p.likes||0}</button><button class="pill" onclick="reactPost('${p.key}','loves')">❤️ ${p.loves||0}</button><button class="pill" onclick="sharePost('${p.key}')">↗️</button><button class="pill" onclick="savePost('${p.key}')">🔖</button>${own}</div><div><input id="c_${p.key}" placeholder="Comment @SAMZY-"><button class="pill" onclick="commentPost('${p.key}')">Comment</button><div id="com_${p.key}"></div></div></div>`;
 }).join('');
-l.forEach(p=>{db.ref('posts/'+p.key+'/comments').on('value',ss=>{let el=document.getElementById('com_'+p.key);if(!el) return;let h="";ss.forEach(cc=>{let v=cc.val();h+=`<div class="pill" style="margin:4px 0;display:block">${v.name}: ${v.text}</div>`;});el.innerHTML=h;});});
+l.forEach(p=>{db.ref('posts/'+p.key+'/comments').on('value',ss=>{let el=document.getElementById('com_'+p.key);if(!el)return;let h="";ss.forEach(cc=>{let v=cc.val();h+=`<div class="pill" style="display:block;margin:4px 0">${v.name}: ${v.text}</div>`;});el.innerHTML=h;});});
 });
 }
-function editPost(k){let p=postsCache.find(x=>x.key===k);let nt=prompt('Edit post:',p.text);if(nt!==null&&useFirebase) db.ref('posts/'+k+'/text').set(nt);}
-function deletePost(k){if(confirm('Delete?')&&useFirebase) db.ref('posts/'+k).remove();}
-function reactPost(k,t){if(useFirebase) db.ref('posts/'+k+'/'+t).transaction(c=>(c||0)+1);}
-function commentPost(k){let i=document.getElementById('c_'+k);let t=i.value.trim();if(!t) return;if(useFirebase) db.ref('posts/'+k+'/comments').push({name:currentUser.name,samzy:mySamzy,text:t,time:Date.now()});i.value="";}
-function sharePost(k){let p=postsCache.find(x=>x.key===k);if(!p) return;if(useFirebase) db.ref('posts').push({name:currentUser.name,samzy:mySamzy,text:'Shared: '+(p.text||''),media:p.media,isVideo:p.isVideo,fbLink:p.fbLink,time:Date.now()});alert('Shared worldwide');}
-function savePost(k){let p=postsCache.find(x=>x.key===k);let s=JSON.parse(localStorage.getItem('saved')||'[]');s.unshift(p);localStorage.setItem('saved',JSON.stringify(s));alert('Saved to Bookmark');}
-function initPresence(){if(!useFirebase) return;db.ref('presence/'+mySamzy).set({online:true,lastActive:Date.now(),name:currentUser.name});db.ref('presence/'+mySamzy).onDisconnect().set({online:false,lastActive:Date.now(),name:currentUser.name});}
-function loadStories(){let b=document.getElementById('storiesBar');if(!b||!useFirebase) return;b.innerHTML=`<div class="card" style="min-width:90px;text-align:center;cursor:pointer" onclick="createStory()">+ Add Story</div>`;db.ref('stories').on('value',s=>{let h=`<div class="card" style="min-width:90px;text-align:center;cursor:pointer" onclick="createStory()">+ Add Story</div>`;s.forEach(c=>{let v=c.val();if(Date.now()-v.time>86400000){db.ref('stories/'+c.key).remove();return;}h+=`<div class="card" style="min-width:90px;text-align:center"><b>${v.name}</b><br>${v.text||''}<br><small>${v.samzy}</small></div>`;});b.innerHTML=h;});}
-function createStory(){let f=prompt('Story (24h) - text or paste FB link');if(f&&useFirebase) db.ref('stories').push({name:currentUser.name,samzy:mySamzy,text:f,time:Date.now()});}
-function listenChat(){if(!useFirebase||!activeChat) return;let id=[mySamzy,activeChat].sort().join('_');db.ref('chats/'+id).on('value',s=>{let el=document.getElementById('chatMsgs');if(!el) return;let h="";s.forEach(c=>{let v=c.val();let txt=decryptChat(v.text);h+=`<div class="pill" style="margin:6px 0;display:block;background:${v.from===mySamzy?'#0ea5e9':'#1e293b'};color:${v.from===mySamzy?'#000':'#fff'}"><b>${v.from}</b>: ${txt} ${v.media?`<br><a href="${v.media}" target="_blank" style="color:yellow">📎 Media</a>`:''} <br><small>${new Date(v.time).toLocaleTimeString()}</small></div>`;});el.innerHTML=h;el.scrollTop=el.scrollHeight;});}
-async function sendChat(){let tEl=document.getElementById('chatInput');let fEl=document.getElementById('chatFile');let t=tEl.value.trim();let file=fEl.files[0];let media="";if(file) media=await uploadBig(file);if(!t&&!media) return;let enc=encryptChat(t||"Media",activeChat);if(useFirebase) db.ref('chats/'+[mySamzy,activeChat].sort().join('_')).push({from:mySamzy,to:activeChat,text:enc,media:media,time:Date.now()});tEl.value="";fEl.value="";}
-function listenCalls(){if(!useFirebase) return;db.ref('calls/'+mySamzy).on('value',async s=>{let v=s.val();if(!v) return;if(v.type==='offer'&&!pc){showIncoming(v);}});}
-function showIncoming(o){let sc=document.getElementById('callScreen');sc.classList.add('show');sc.innerHTML=`<div style="margin:auto;text-align:center;padding:20px"><h2>📞 ${o.from} calling... RING</h2><p>Video call - SAMZY number ring even if app closed</p><div class="call-controls"><button class="call-btn accept" onclick="acceptCall()">✓ Answer</button><button class="call-btn end" onclick="endCall()">✕ Decline</button></div></div>`;try{if(navigator.vibrate) navigator.vibrate([400,200,400]);if(Notification&&Notification.permission==='granted') new Notification('SAMZY Call from '+o.from);}catch(e){}}
-async function startCall(target){if(!target) target=prompt('Enter SAMZY- number to call (e.g. SAMZY-000001)');if(!target) return;activeChat=target;pc=new RTCPeerConnection({iceServers:[FREE_TURN]});try{localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});localStream.getTracks().forEach(tr=>pc.addTrack(tr,localStream));}catch(e){alert('Camera/mic permission needed');return;}pc.onicecandidate=e=>{if(e.candidate&&useFirebase) db.ref('calls/'+target+'/candidates').push(e.candidate);};pc.ontrack=e=>{let rv=document.getElementById('remoteVideo');if(rv) rv.srcObject=e.streams[0];};let offer=await pc.createOffer();await pc.setLocalDescription(offer);if(useFirebase) db.ref('calls/'+target).set({type:'offer',from:mySamzy,sdp:offer});let sc=document.getElementById('callScreen');sc.classList.add('show');sc.innerHTML=`<div style="margin:auto;text-align:center"><p>Calling ${target}... Ringing worldwide</p><video id="localVideo" autoplay muted playsinline style="width:120px;position:absolute;top:10px;right:10px;border:2px solid #0ea5e9"></video><video id="remoteVideo" autoplay playsinline style="width:100%;height:60vh"></video><div class="call-controls"><button class="call-btn end" onclick="endCall()">✕ End</button></div></div>`;document.getElementById('localVideo').srcObject=localStream;}
-async function acceptCall(){let snap=await db.ref('calls/'+mySamzy).once('value');let offer=snap.val();if(!offer) return;pc=new RTCPeerConnection({iceServers:[FREE_TURN]});localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});localStream.getTracks().forEach(tr=>pc.addTrack(tr,localStream));await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));let ans=await pc.createAnswer();await pc.setLocalDescription(ans);if(useFirebase) db.ref('calls/'+offer.from).set({type:'answer',from:mySamzy,sdp:ans});let sc=document.getElementById('callScreen');sc.classList.add('show');sc.innerHTML=`<video id="localVideo" autoplay muted playsinline style="width:120px;position:absolute;top:10px;right:10px"></video><video id="remoteVideo" autoplay playsinline style="width:100%;height:70vh"></video><div class="call-controls"><button class="call-btn end" onclick="endCall()">✕</button></div>`;document.getElementById('localVideo').srcObject=localStream;db.ref('calls/'+offer.from+'/candidates').on('child_added',async ss=>{try{await pc.addIceCandidate(new RTCIceCandidate(ss.val()));}catch(e){}});}
-function endCall(){if(pc){pc.close();pc=null;}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}document.getElementById('callScreen').classList.remove('show');document.getElementById('callScreen').innerHTML="";if(useFirebase) db.ref('calls/'+mySamzy).remove();}
-document.addEventListener('DOMContentLoaded',()=>{
-document.getElementById('authView').innerHTML=`<div class="card" style="margin-top:60px;text-align:center"><img src="samzy_logo_256.png" style="width:90px;border-radius:20px"><h2>SAMZY 5 - Worldwide</h2><p style="font-size:12px;margin:8px 0">Registration + Sign In + Confirmation = SAMZY- number (e.g. SAMZY-000001) IS your code forever</p><input id="authName" placeholder="Your Name - Mr A Lagos"><div style="margin:10px 0;text-align:left"><input type="checkbox" id="authAge" style="width:auto"> I am 13+ years</div><button class="btn" onclick="handleAuth()">Register / Sign In</button></div>`;
-let saved=localStorage.getItem('samzy_user');
-if(saved){currentUser=JSON.parse(saved);mySamzy=currentUser.samzy;document.getElementById('authView').classList.add('hidden');document.getElementById('mainView').classList.remove('hidden');setTimeout(()=>{let el=document.getElementById('mySamzy');if(el) el.textContent=mySamzy;initPresence();listenCalls();loadAll();loadStories();},600);}
-});
-function switchTab(t,el){document.querySelectorAll('#feedView,#friendsView,#groupsView,#marketView,#watchView,#savedView,#profileView').forEach(v=>v.classList.add('hidden'));let tg=document.getElementById(t+'View');if(tg) tg.classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));if(el) el.classList.add('active');if(t==='groups'&&typeof loadGroups==='function') loadGroups();if(t==='market'&&typeof loadMarket==='function') loadMarket();if(t==='watch'&&typeof loadWatch==='function') loadWatch();if(t==='saved'&&typeof loadSaved==='function') loadSaved();if(t==='friends'&&typeof loadFriendsView==='function') loadFriendsView();if(t==='profile'&&typeof loadProfile==='function') loadProfile();}
-function loadGroups(){if(!useFirebase) return;document.getElementById('groupsView').innerHTML=`<div class="card"><h3>Groups</h3><input id="groupName" placeholder="Group name e.g. Lagos Traders"><button class="btn" onclick="createGroup()">Create Group</button><div id="groupsList"></div></div>`;db.ref('groups').on('value',s=>{let h="";s.forEach(c=>{let v=c.val();h+=`<div class="card"><b>${v.name}</b> - Owner ${v.owner} <button class="pill" onclick="joinGroup('${c.key}')">Join</button></div>`;});let el=document.getElementById('groupsList');if(el) el.innerHTML=h;});}
-function createGroup(){let n=document.getElementById('groupName').value.trim();if(!n) return;if(useFirebase) db.ref('groups').push({name:n,owner:mySamzy,time:Date.now()});document.getElementById('groupName').value="";}
-function joinGroup(k){if(useFirebase) db.ref('groups/'+k+'/members/'+mySamzy).set({joined:Date.now()});alert('Joined group');}
-function loadMarket(){if(!useFirebase) return;document.getElementById('marketView').innerHTML=`<div class="card"><h3>Marketplace - Paystack > Facebook</h3><input id="marketItem" placeholder="Item name + price e.g. Shoe 5000 NGN"><input id="marketPic" type="file" accept="image/*"><button class="btn" onclick="createMarket()">Post Item</button><div id="marketList"></div></div>`;db.ref('market').on('value',s=>{let h="";s.forEach(c=>{let v=c.val();h+=`<div class="card"><b>${v.item}</b><br>Owner: ${v.owner} ${v.pic?`<br><img src="${v.pic}" style="width:100%">`:''}<br><button class="pill" onclick="payItem('${v.item}')">Buy with Paystack</button></div>`;});let el=document.getElementById('marketList');if(el) el.innerHTML=h;});}
-async function createMarket(){let t=document.getElementById('marketItem').value.trim();let f=document.getElementById('marketPic').files[0];let pic="";if(f) pic=await uploadBig(f);if(!t) return;if(useFirebase) db.ref('market').push({item:t,pic:pic,owner:mySamzy,time:Date.now()});document.getElementById('marketItem').value="";}
-function payItem(i){alert('Paystack payment for: '+i+' - Add your Paystack public key in code to collect money worldwide');}
-function loadWatch(){if(!useFirebase) return;document.getElementById('watchView').innerHTML=`<div class="card"><h3>Watch - All picture + video + Facebook links</h3><div id="watchList"></div></div>`;db.ref('posts').limitToLast(100).on('value',s=>{let h="";s.forEach(c=>{let p=c.val();if(p.media||p.fbLink){let m="";if(p.fbLink) m+=`<div class="pill"><a href="${p.fbLink}" target="_blank" style="color:#0ea5e9">FB Link: ${p.fbLink}</a></div>`;if(p.media) m+=p.isVideo?`<video src="${p.media}" controls style="width:100%"></video>`:`<img src="${p.media}" style="width:100%">`;h+=`<div class="card"><b>${p.name} ${p.samzy}</b><br>${m}<p>${p.text||''}</p></div>`;}});let el=document.getElementById('watchList');if(el) el.innerHTML=h;});}
-function loadSaved(){let sv=JSON.parse(localStorage.getItem('saved')||'[]');let h=`<div class="card"><h3>Saved Posts + Memories</h3></div>`;h+=sv.map(p=>`<div class="card"><b>${p.name||''}</b><p>${p.text||''}</p>${p.media?(p.isVideo?`<video src="${p.media}" controls style="width:100%"></video>`:`<img src="${p.media}" style="width:100%">`):''} ${p.fbLink?`<a href="${p.fbLink}" target="_blank">FB Link</a>`:''}</div>`).join('');document.getElementById('savedView').innerHTML=h||'<div class="card">No saved yet</div>';}
-function loadFriendsView(){document.getElementById('friendsView').innerHTML=`<div class="card"><h3>Friends - Search SAMZY-</h3><input id="friendSearch" placeholder="Enter SAMZY-000001"><button class="pill" onclick="searchFriend()">Search</button><div id="friendsList" style="margin-top:10px"></div><div class="card"><h4>Online Users Worldwide</h4><div id="onlineList"></div></div></div>`;if(useFirebase) db.ref('presence').on('value',s=>{let h="";s.forEach(c=>{let v=c.val();h+=`<div class="pill">${v.name} ${c.key} ${v.online?'🟢 Online':'⚪ '+new Date(v.lastActive).toLocaleTimeString()} <button class="pill" onclick="openChat('${c.key}')">Chat</button> <button class="pill" onclick="startCall('${c.key}')">Call</button></div>`;});let el=document.getElementById('onlineList');if(el) el.innerHTML=h;});}
-function searchFriend(){let q=document.getElementById('friendSearch').value.trim();if(!q||!useFirebase) return;db.ref('users/'+q).once('value',s=>{if(s.exists()){let v=s.val();document.getElementById('friendsList').innerHTML+=`<div class="card">${v.name} ${v.samzy} <button class="pill" onclick="openChat('${v.samzy}')">Chat</button> <button class="pill" onclick="startCall('${v.samzy}')">Video Call</button></div>`;}else alert('Not found');});}
-function loadProfile(){document.getElementById('profileView').innerHTML=`<div class="card"><h3>Profile</h3><p>Name: ${currentUser?currentUser.name:''}</p><p>SAMZY: ${mySamzy}</p><p>This SAMZY- IS your confirmation code forever</p><input type="file" id="dpFile" accept="image/*"><button class="pill" onclick="updateDP()">Update DP</button><div style="margin-top:12px"><button class="pill" onclick="if(mySamzy==='SAMZY-000000'){if(confirm('Admin delete all posts?')) db.ref('posts').remove();}else alert('Only SAMZY-000000 admin')">Admin Delete</button></div></div>`;}
-async function updateDP(){let f=document.getElementById('dpFile').files[0];if(!f) return;let u=await uploadBig(f);if(useFirebase) db.ref('users/'+mySamzy+'/dp').set(u);alert('DP updated');}
-function openChat(samzy){activeChat=samzy;document.getElementById('friendsView').classList.remove('hidden');document.getElementById('friendsView').innerHTML=`<div class="card"><b>Encrypted Chat with ${samzy} - Only you two can read</b><div id="chatMsgs" style="height:320px;overflow-y:auto;border:1px solid #1e293b;border-radius:10px;padding:6px;margin:8px 0"></div><input id="chatInput" placeholder="Type message + tag @SAMZY-"><input type="file" id="chatFile" accept="image/*,video/*"><button class="btn" onclick="sendChat()">Send Worldwide</button><button class="pill" onclick="loadFriendsView()">Back</button></div>`;listenChat();}
+function editPost(k){let p=postsCache.find(x=>x.key===k);let nt=prompt('Edit:',p.text);if(nt!==null&&useFirebase)db.ref('posts/'+k+'/text').set(nt);}
+function deletePost(k){if(confirm('Delete?')&&useFirebase)db.ref('posts/'+k).remove();}
+function reactPost(k,t){if(useFirebase)db.ref('posts/'+k+'/'+t).transaction(c=>(c||0)+1);}
+function commentPost(k){let i=document.getElementById('c_'+k);let t=i.value.trim();if(!t)return;if(useFirebase)db.ref('posts/'+k+'/comments').push({name:currentUser.name,samzy:mySamzy,text:t,time:Date.now()});i.value="";}
+function sharePost(k){let p=postsCache.find(x=>x.key===k);if(useFirebase)db.ref('posts').push({name:currentUser.name,samzy:mySamzy,text:'Shared: '+(p.text||''),media:p.media,isVideo:p.isVideo,fbLink:p.fbLink,time:Date.now()});}
+function savePost(k){let p=postsCache.find(x=>x.key===k);let s=JSON.parse(localStorage.getItem('saved')||'[]');s.unshift(p);localStorage.setItem('saved',JSON.stringify(s));alert('Saved');}
+function initPresence(){if(!useFirebase)return;db.ref('presence/'+mySamzy).set({online:true,lastActive:Date.now(),name:currentUser.name});db.ref('presence/'+mySamzy).onDisconnect().set({online:false,lastActive:Date.now()});}
+function loadStories(){let b=document.getElementById('storiesBar');if(!b||!useFirebase)return;b.innerHTML=`<div class="card" style="min-width:90px;text-align:center" onclick="createStory()">+ Story</div>`;db.ref('stories').on('value',s=>{let h=`<div class="card" style="min-width:90px;text-align:center" onclick="createStory()">+ Story</div>`;s.forEach(c=>{let v=c.val();if(Date.now()-v.time>86400000){db.ref('stories/'+c.key).remove();return;}h+=`<div class="card" style="min-width:90px"><b>${v.name}</b><br>${v.text||''}</div>`;});b.innerHTML=h;});}
+function createStory(){let f=prompt('Story text');if(f&&useFirebase)db.ref('stories').push({name:currentUser.name,samzy:mySamzy,text:f,time:Date.now()});}
+function listenChat(){if(!useFirebase||!activeChat)return;let id=[mySamzy,activeChat].sort().join('_');db.ref('chats/'+id).on('value',s=>{let el=document.getElementById('chatMsgs');if(!el)return;let h="";s.forEach(c=>{let v=c.val();let txt=decryptChat(v.text);h+=`<div class="pill" style="display:block;margin:6px 0;background:${v.from===mySamzy?'#0ea5e9':'#1e293b'}">${txt} ${v.media?`<a href="${v.media}" target="_blank">Media</a>`:''}</div>`;});el.innerHTML=h;});}
+async function sendChat(){let tEl=document.getElementById('chatInput');let fEl=document.getElementById('chatFile');let t=tEl.value.trim();let file=fEl.files[0];let media="";if(file)media=await uploadBig(file);if(!t&&!media)return;let enc=encryptChat(t||"Media",activeChat);if(useFirebase)db.ref('chats/'+[mySamzy,activeChat].sort().join('_')).push({from:mySamzy,to:activeChat,text:enc,media:media,time:Date.now()});tEl.value="";fEl.value="";}
+function listenCalls(){if(!useFirebase)return;db.ref('calls/'+mySamzy).on('value',s=>{let v=s.val();if(v&&v.type==='offer')showIncoming(v);});}
+function showIncoming(o){let sc=document.getElementById('callScreen');sc.classList.add('show');sc.innerHTML=`<div style="margin:auto;text-align:center"><h2>${o.from} calling RING</h2><div class="call-controls"><button class="call-btn accept" onclick="acceptCall()">✓</button><button class="call-btn end" onclick="endCall()">✕</button></div></div>`;}
+async function startCall(target){if(!target)target=prompt('Enter SAMZY- number');if(!target)return;pc=new RTCPeerConnection({iceServers:[FREE_TURN]});try{localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});localStream.getTracks().forEach(tr=>pc.addTrack(tr,localStream));}catch(e){alert('Need camera');return;}pc.onicecandidate=e=>{if(e.candidate&&useFirebase)db.ref('calls/'+target+'/candidates').push(e.candidate);};let offer=await pc.createOffer();await pc.setLocalDescription(offer);if(useFirebase)db.ref('calls/'+target).set({type:'offer',from:mySamzy,sdp:offer});let sc=document.getElementById('callScreen');sc.classList.add('show');sc.innerHTML=`<p>Calling ${target}</p><button class="call-btn end" onclick="endCall()">End</button><video id="localVideo" autoplay muted playsinline style="width:100px;position:absolute;top:10px;right:10px"></video><video id="remoteVideo" autoplay playsinline style="width:100%;height:60vh"></video>`;document.getElementById('localVideo').srcObject=localStream;}
+async function acceptCall(){let snap=await db.ref('calls/'+mySamzy).once('value');let offer=snap.val();pc=new RTCPeerConnection({iceServers:[FREE_TURN]});localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});localStream.getTracks().forEach(tr=>pc.addTrack(tr,localStream));await pc.setRemoteDescription(new RTCSessionDescription(offer.sdp));let ans=await pc.createAnswer();await pc.setLocalDescription(ans);if(useFirebase)db.ref('calls/'+offer.from).set({type:'answer',from:mySamzy,sdp:ans});let sc=document.getElementById('callScreen');sc.classList.add('show');sc.innerHTML=`<video id="localVideo" autoplay muted playsinline style="width:100px;position:absolute;top:10px;right:10px"></video><video id="remoteVideo" autoplay playsinline style="width:100%;height:70vh"></video><div class="call-controls"><button class="call-btn end" onclick="endCall()">✕</button></div>`;document.getElementById('localVideo').srcObject=localStream;}
+function endCall(){if(pc){pc.close();pc=null;}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}document.getElementById('callScreen').classList.remove('show');document.getElementById('callScreen').innerHTML="";if(useFirebase)db.ref('calls/'+mySamzy).remove();}
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('authView').innerHTML=`<div class="card" style="margin-top:60px;text-align:center"><h2>SAMZY Worldwide</h2><p>Registration + SAMZY- number forever</p><input id="authName" placeholder="Name"><div style="margin:10px 0"><input type="checkbox" id="authAge" style="width:auto"> I am 13+</div><button class="btn" onclick="handleAuth()">Enter</button></div>`;let saved=localStorage.getItem('samzy_user');if(saved){currentUser=JSON.parse(saved);mySamzy=currentUser.samzy;document.getElementById('authView').classList.add('hidden');document.getElementById('mainView').classList.remove('hidden');setTimeout(()=>{document.getElementById('mySamzy').textContent=mySamzy;initPresence();listenCalls();loadAll();loadStories();},600);}});
+function switchTab(t,el){document.querySelectorAll('#feedView,#friendsView,#groupsView,#marketView,#watchView,#savedView,#profileView').forEach(v=>v.classList.add('hidden'));let tg=document.getElementById(t+'View');if(tg)tg.classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');if(t==='groups')loadGroups();if(t==='market')loadMarket();if(t==='watch')loadWatch();if(t==='saved')loadSaved();if(t==='friends')loadFriendsView();if(t==='profile')loadProfile();}
+function loadGroups(){if(!useFirebase)return;document.getElementById('groupsView').innerHTML=`<div class="card"><h3>Groups</h3><input id="groupName" placeholder="Group name"><button class="btn" onclick="createGroup()">Create</button><div id="groupsList"></div></div>`;db.ref('groups').on('value',s=>{let h="";s.forEach(c=>{let v=c.val();h+=`<div class="card">${v.name} Owner ${v.owner} <button class="pill" onclick="joinGroup('${c.key}')">Join</button></div>`;});let el=document.getElementById('groupsList');if(el)el.innerHTML=h;});}
+function createGroup(){let n=document.getElementById('groupName').value.trim();if(n&&useFirebase)db.ref('groups').push({name:n,owner:mySamzy,time:Date.now()});}
+function joinGroup(k){if(useFirebase)db.ref('groups/'+k+'/members/'+mySamzy).set(true);alert('Joined');}
+function loadMarket(){if(!useFirebase)return;document.getElementById('marketView').innerHTML=`<div class="card"><h3>Marketplace Paystack</h3><input id="marketItem" placeholder="Item + price"><input id="marketPic" type="file" accept="image/*"><button class="btn" onclick="createMarket()">Post</button><div id="marketList"></div></div>`;db.ref('market').on('value',s=>{let h="";s.forEach(c=>{let v=c.val();h+=`<div class="card">${v.item} ${v.pic?`<br><img src="${v.pic}" style="width:100%">`:''}<br><button class="pill" onclick="payItem('${v.item}')">Buy Paystack</button></div>`;});let el=document.getElementById('marketList');if(el)el.innerHTML=h;});}
+async function createMarket(){let t=document.getElementById('marketItem').value.trim();let f=document.getElementById('marketPic').files[0];let pic="";if(f)pic=await uploadBig(f);if(t&&useFirebase)db.ref('market').push({item:t,pic:pic,owner:mySamzy});}
+function payItem(i){alert('Paystack for '+i);}
+function loadWatch(){if(!useFirebase)return;document.getElementById('watchView').innerHTML=`<div class="card"><h3>Watch - FB + video + pic</h3><div id="watchList"></div></div>`;db.ref('posts').limitToLast(100).on('value',s=>{let h="";s.forEach(c=>{let p=c.val();if(p.media||p.fbLink){let m="";if(p.fbLink)m+=`<a href="${p.fbLink}" target="_blank" style="color:#0ea5e9">${p.fbLink}</a><br>`;if(p.media)m+=p.isVideo?`<video src="${p.media}" controls style="width:100%"></video>`:`<img src="${p.media}" style="width:100%">`;h+=`<div class="card">${m}<p>${p.text||''}</p></div>`;}});let el=document.getElementById('watchList');if(el)el.innerHTML=h;});}
+function loadSaved(){let sv=JSON.parse(localStorage.getItem('saved')||'[]');document.getElementById('savedView').innerHTML=`<div class="card"><h3>Saved</h3></div>`+sv.map(p=>`<div class="card">${p.text||''} ${p.media?(p.isVideo?`<video src="${p.media}" controls style="width:100%"></video>`:`<img src="${p.media}" style="width:100%">`):''}</div>`).join('');}
+function loadFriendsView(){document.getElementById('friendsView').innerHTML=`<div class="card"><input id="friendSearch" placeholder="SAMZY-000001"><button class="pill" onclick="searchFriend()">Search</button><div id="friendsList"></div><div id="onlineList"></div></div>`;if(useFirebase)db.ref('presence').on('value',s=>{let h="";s.forEach(c=>{let v=c.val();h+=`<div class="pill">${v.name} ${c.key} ${v.online?'🟢':''} <button class="pill" onclick="openChat('${c.key}')">Chat</button> <button class="pill" onclick="startCall('${c.key}')">Call</button></div>`;});let el=document.getElementById('onlineList');if(el)el.innerHTML=h;});}
+function searchFriend(){let q=document.getElementById('friendSearch').value.trim();if(!q||!useFirebase)return;db.ref('users/'+q).once('value',s=>{if(s.exists()){let v=s.val();document.getElementById('friendsList').innerHTML+=`<div class="card">${v.name} ${v.samzy} <button class="pill" onclick="openChat('${v.samzy}')">Chat</button> <button class="pill" onclick="startCall('${v.samzy}')">Call</button></div>`;}else alert('Not found');});}
+function loadProfile(){document.getElementById('profileView').innerHTML=`<div class="card"><h3>${currentUser?currentUser.name:''}</h3><p>${mySamzy}</p><input type="file" id="dpFile"><button class="pill" onclick="updateDP()">Update DP</button></div>`;}
+async function updateDP(){let f=document.getElementById('dpFile').files[0];if(f){let u=await uploadBig(f);if(useFirebase)db.ref('users/'+mySamzy+'/dp').set(u);alert('DP updated');}}
+function openChat(s){activeChat=s;document.getElementById('friendsView').innerHTML=`<div class="card"><b>Chat ${s} Encrypted</b><div id="chatMsgs" style="height:300px;overflow-y:auto;border:1px solid #1e293b;padding:6px"></div><input id="chatInput" placeholder="Type"><input type="file" id="chatFile"><button class="btn" onclick="sendChat()">Send</button><button class="pill" onclick="loadFriendsView()">Back</button></div>`;listenChat();}
+{"name":"SAMZY","short_name":"SAMZY","start_url":".","display":"standalone","background_color":"#020617"}
+self.addEventListener('fetch',e=>{})
