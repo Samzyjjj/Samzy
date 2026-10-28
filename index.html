@@ -1,68 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SAMZY Worldwide</title>
+<title>SAMZY Worldwide - Real Checked</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
-body{background:#020617;color:#fff}
+body{background:#020617;color:#e5e7eb}
 .hidden{display:none!important}
-.card{background:#0f172a;border-radius:16px;padding:16px;margin:12px;border:1px solid #1e293b}
-.btn{background:#0ea5e9;color:#000;border:0;border-radius:20px;padding:12px;width:100%;font-weight:700;margin-top:10px}
-input,textarea{width:100%;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;color:#fff;margin-top:8px}
-.pill{background:#1e293b;border-radius:20px;padding:6px 12px;display:inline-block;margin:4px}
+.card{background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:14px;margin:10px}
+.btn{background:#0ea5e9;color:#000;border:0;border-radius:24px;padding:12px;width:100%;font-weight:800;cursor:pointer}
+.btn2{background:#1e293b;color:#fff;border:1px solid #334155;border-radius:24px;padding:10px;width:100%;font-weight:700;margin-top:8px}
+input,textarea{width:100%;background:#1e293b;border:1px solid #334155;border-radius:12px;padding:12px;color:#fff;margin-top:8px}
+.pill{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:6px 10px;display:inline-block;margin:3px;font-size:12px}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #1e293b;display:flex;justify-content:space-around;padding:8px;z-index:99}
+.tab{padding:8px 12px;border-radius:12px;cursor:pointer}
+.tab.active{background:#0ea5e9;color:#000;font-weight:800}
+.fb{background:#1877F2;color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:800}
+.online{width:10px;height:10px;background:#22c55e;border-radius:50%;display:inline-block;margin-left:4px}
+#callModal{position:fixed;inset:0;background:#000000ee;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
+video{width:100%;border-radius:12px;background:#000;max-height:40vh;margin-top:8px}
 </style>
 </head>
 <body>
-<div id="authView" class="card" style="margin-top:80px;text-align:center">
-<h2>SAMZY Worldwide</h2>
-<p>Registration + SAMZY- number forever</p>
+<div id="authView" class="card" style="margin:60px 16px;text-align:center">
+<h1>SAMZY Worldwide</h1>
+<p style="opacity:.7">Registration + SAMZY- forever</p>
 <input id="authName" placeholder="Your Name">
-<div style="margin:12px 0"><input type="checkbox" id="authAge" style="width:auto"> I am 13+</div>
+<div style="margin:12px 0;text-align:left"><label><input type="checkbox" id="authAge" style="width:auto"> I am 13+</label></div>
 <button class="btn" onclick="handleAuth()">Enter SAMZY</button>
 </div>
-<div id="mainView" class="hidden">
-<div class="card"><b id="mySamzy"></b> <button class="pill" onclick="localStorage.clear();location.reload()">Logout</button></div>
-<div class="card"><textarea id="postText" placeholder="Write + paste FB link https://fb.watch/xxx"></textarea><input type="file" id="postPic" accept="image/*,video/*"><button class="btn" onclick="createPost()">Post</button></div>
+<div id="mainView" class="hidden" style="padding-bottom:70px">
+<div class="card" style="display:flex;justify-content:space-between">
+<div><b id="mySamzy"></b><span class="online"></span><div id="myName" style="font-size:12px;opacity:.6"></div></div>
+<button class="pill" onclick="localStorage.clear();location.reload()">Logout</button>
+</div>
+<div id="homeTab">
+<div class="card">
+<textarea id="postText" placeholder="Write + paste FB link https://fb.watch/xxx"></textarea>
+<input type="file" id="postPic" accept="image/*,video/*">
+<button class="btn" onclick="createPost()">Post Worldwide</button>
+<div style="margin-top:8px"><button class="pill" onclick="createStory()">+ Story 24h</button></div>
+</div>
+<div id="storiesBar" style="display:flex;overflow:auto;padding:0 10px"></div>
 <div id="posts"></div>
 </div>
-<script>
-let currentUser=null,mySamzy="",posts=[];
-function genSamzy(){return 'SAMZY-'+String(Date.now()).slice(-6).padStart(6,'0');}
-function handleAuth(){
-let n=document.getElementById('authName').value.trim();
-if(!n){alert('Name');return;}
-if(!document.getElementById('authAge').checked){alert('Tick 13+');return;}
-let s=localStorage.getItem('samzy_user');
-if(s){currentUser=JSON.parse(s);mySamzy=currentUser.samzy;}
-else{mySamzy=genSamzy();currentUser={name:n,samzy:mySamzy};localStorage.setItem('samzy_user',JSON.stringify(currentUser));}
-document.getElementById('authView').classList.add('hidden');
-document.getElementById('mainView').classList.remove('hidden');
-document.getElementById('mySamzy').textContent=mySamzy+' - '+currentUser.name;
-loadPosts();
-}
-function createPost(){
-let txt=document.getElementById('postText').value.trim();
-let file=document.getElementById('postPic').files[0];
-if(!txt && !file){alert('Write something');return;}
-let url=""; if(file) url=URL.createObjectURL(file);
-posts.unshift({name:currentUser.name,samzy:mySamzy,text:txt,media:url,isVideo:file&&file.type.startsWith('video'),time:Date.now()});
-document.getElementById('postText').value=""; document.getElementById('postPic').value="";
-render();
-}
-function loadPosts(){render();}
-function render(){
-let d=document.getElementById('posts');
-d.innerHTML=posts.map(p=>`<div class="card"><b>${p.name}</b> <span class="pill">${p.samzy}</span><p>${p.text}</p>${p.media?(p.isVideo?`<video src="${p.media}" controls style="width:100%"></video>`:`<img src="${p.media}" style="width:100%">`):''}</div>`).join('');
-}
-let saved=localStorage.getItem('samzy_user');
-if(saved){
-currentUser=JSON.parse(saved);mySamzy=currentUser.samzy;
-document.getElementById('authView').classList.add('hidden');
-document.getElementById('mainView').classList.remove('hidden');
-setTimeout(()=>{document.getElementById('mySamzy').textContent=mySamzy+' - '+currentUser.name;},500);
-}
-</script>
-</body>
-</html>
+<div id="watchTab" class="hidden">
+<div class="card"><h3>Watch - FB Links + Videos + Pictures</h3></div>
+<div id="watchPosts"></div>
+</div>
+<div id="friendsTab" class="hidden">
+<div class="card"><h3>Friends by SAMZY- number</h3><input id="friendSearch" placeholder="SAMZY-123456" oninput="searchFriend()"><div id="friendResult"></div></div>
+<div class="card"><h4>Chat Encrypted</h4><div id="chatBox" style="max-height:180px;overflow:auto;background:#020617;padding:8px;border-radius:10px;margin:6px 0"></div><input id="chatInput" placeholder="Message..."><button class="btn2" onclick="sendChat()">Send</button></div>
+</div>
+<div id="groupsTab" class="hidden"><div class="card"><h3>Groups</h3><input id="groupName" placeholder="Group name"><button class="btn2" onclick="createGroup()">Create</button><div id="groupsList"></div></div></div>
+<div id="marketTab" class="hidden"><div class="card"><h3>Marketplace</h3><input id="itemName" placeholder="Item"><input id="itemPrice" placeholder="Price" type="number"><button class="btn2" onclick="addMarket()">Add</button><div id="marketList"></div></div></div>
+<div id="callTab" class="hidden"><div class="card"><h3>Video Call Worldwide FREE</h3><input id="callTo" placeholder="SAMZY- number"><button class="btn" onclick="startCall()">Call with Ringing</button><div id="callStatus" style="margin-top:8px"></div><video id="localVideo" autoplay muted playsinline></video><video id="remoteVideo" autoplay playsinline></
